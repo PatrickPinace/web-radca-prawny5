@@ -2,6 +2,9 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Contact from '../components/Contact.astro';
+import PalettePanel from '../palette/PalettePanel.astro';
+import paletteConfig from '../palette/palette.config.js?raw';
+import paletteEngine from '../palette/palette.engine.js?raw';
 import { site } from '../data/site';
 import { isProduction, isPlaceholder, noindexPaths } from '../data/env';
 
@@ -53,6 +56,7 @@ const org = {
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta name="theme-color" content="#ffffff" />
+    {site.demo && <script is:inline set:html={`${paletteConfig}\n${paletteEngine}`} />}
     <script type="application/ld+json" set:html={JSON.stringify(org)} />
     {jsonLd.map((d) => <script type="application/ld+json" set:html={JSON.stringify(d)} />)}
   </head>
@@ -65,5 +69,6 @@ const org = {
       <slot />
     </main>
     <Contact label={contactLabel} />
+    {site.demo && <PalettePanel />}
   </body>
 </html>

@@ -3,6 +3,8 @@
 Statyczna strona w Astro 5. Projekt wizualny to wersja D.2 z kanwy: białe tło, Półtawski Nowy + Archivo, monochrom.
 
 > **Wersja demonstracyjna.** Dane kontaktowe (`src/data/site.ts`, `demo: true`), teksty podstron i zdjęcie (`src/assets/portret-demo.jpg`) są fikcyjne i służą tylko do pokazania konceptu. Build produkcyjny jest przy `demo: true` zablokowany. Zrzuty podstron: folder [`zrzuty/`](zrzuty).
+>
+> W wersji demo jest też panel **Kolory** (przycisk w prawym dolnym rogu): gotowe palety, własne kolory po HEX (tło, tekst, akcent, stopka), kontrola kontrastu, zapis własnych palet i odtwarzanie ich „kodem palety” lub linkiem. To przenośny moduł — opis i przenoszenie do innych stron w [`src/palette/README.md`](src/palette/README.md). Panel pojawia się tylko przy `demo: true`.
 
 ## Uruchomienie
 

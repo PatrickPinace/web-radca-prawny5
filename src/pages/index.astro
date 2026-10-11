@@ -52,7 +52,7 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
         {specs.map((s) => (
           <li>
             <a class="row" href={`/${s.id}/`}>
-              <span class="tnum" style="font-size: 14px; color: var(--muted)">{pad2(s.data.order)}</span>
+              <span class="tnum" style="font-size: 14px; color: var(--accent, var(--muted))">{pad2(s.data.order)}</span>
               <span class="rn">{s.data.title}</span>
               <span class="rd">{s.data.short}</span>
               <span class="arr" aria-hidden="true">→</span>
@@ -91,13 +91,13 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
   .rows { list-style: none; margin: 0; padding: 0; max-width: 1240px; border-bottom: 1px solid var(--rule); }
   .row { display: grid; grid-template-columns: 64px minmax(0, 1fr) minmax(0, 40ch) 40px; column-gap: var(--gap); align-items: baseline; padding: 20px 0; border-top: 1px solid var(--rule); }
   .row:hover { background: rgba(128, 128, 128, 0.09); }
-  .row:hover .rn { text-decoration: underline; text-underline-offset: 8px; text-decoration-thickness: 1px; }
+  .row:hover .rn { text-decoration: underline; text-underline-offset: 8px; text-decoration-thickness: 1px; text-decoration-color: var(--accent, currentColor); }
   .rn { font-family: var(--serif); font-size: clamp(32px, 4.1vw, 62px); line-height: 1.05; letter-spacing: -0.015em; }
   .rd { font-size: 16px; line-height: 1.55; color: var(--soft); }
-  .arr { justify-self: end; font-size: 22px; }
+  .arr { justify-self: end; font-size: 22px; color: var(--accent, currentColor); }
   .toc { list-style: none; margin: 0; padding: 0; max-width: 1240px; border-bottom: 1px solid var(--rule); }
   .toc li { display: grid; grid-template-columns: 64px minmax(0, 320px) minmax(0, 48ch); column-gap: var(--gap); padding: 18px 0; align-items: baseline; border-top: 1px solid var(--rule); }
-  .toc .n { font-size: 14px; color: var(--muted); }
+  .toc .n { font-size: 14px; color: var(--accent, var(--muted)); }
   .toc .t { font-size: 17px; font-weight: 700; }
   .toc .d { font-size: 16px; line-height: 1.55; color: var(--soft); }
   @media (max-width: 760px) {

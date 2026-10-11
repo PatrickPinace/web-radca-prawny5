@@ -1,0 +1,276 @@
+---
+// Panel testowania palet kolorów (komponent ogólny). Konfiguracja: palette.config.js, logika: palette.engine.js.
+// Wstaw raz w layoucie, np. {site.demo && <PalettePanel />} — zob. README.md w tym folderze.
+---
+<div class="pal" id="pal" hidden>
+  <div class="pal-panel" id="pal-panel" role="group" aria-label="Paleta kolorów" hidden>
+    <p class="pal-title">Gotowe palety</p>
+    <div class="pal-list" id="pal-list"></div>
+
+    <p class="pal-title pal-title-2">Własne kolory</p>
+    <div class="pal-roles" id="pal-roles"></div>
+    <ul class="pal-checks" id="pal-checks" aria-live="polite"></ul>
+
+    <p class="pal-title pal-title-2"><label for="pal-code">Kod palety (HEX)</label></p>
+    <div class="pal-code-row">
+      <input type="text" id="pal-code" spellcheck="false" autocomplete="off" aria-describedby="pal-code-msg" />
+      <button type="button" id="pal-load">Wczytaj</button>
+    </div>
+    <p class="pal-hint" id="pal-code-msg" aria-live="polite"></p>
+
+    <div class="pal-actions">
+      <button type="button" id="pal-save">Zapisz paletę</button>
+      <button type="button" id="pal-copy-code">Kopiuj kod</button>
+      <button type="button" id="pal-copy">Kopiuj link</button>
+      <button type="button" id="pal-reset">Domyślna</button>
+    </div>
+
+    <div id="pal-saved-wrap" hidden>
+      <p class="pal-title pal-title-2">Zapisane przez Ciebie</p>
+      <div class="pal-saved" id="pal-saved"></div>
+    </div>
+  </div>
+  <button type="button" class="pal-toggle" id="pal-toggle" aria-expanded="false" aria-controls="pal-panel">Kolory</button>
+</div>
+
+<style is:global>
+  .pal { position: fixed; right: 16px; bottom: 16px; z-index: 20; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; font-family: var(--sans); font-size: 14px; line-height: 1.4; }
+  .pal[hidden] { display: none; }
+  .pal-toggle { min-height: 44px; padding: 0 18px; border: 1px solid var(--ink); border-radius: 22px; background: var(--ink); color: var(--bg); font: inherit; font-weight: 700; cursor: pointer; box-shadow: 0 0 0 3px var(--bg), 0 4px 14px rgba(0, 0, 0, 0.28); }
+  .pal-panel { width: 304px; max-width: calc(100vw - 32px); max-height: calc(100vh - 96px); overflow-y: auto; overflow-x: hidden; padding: 16px; background: var(--bg); color: var(--ink); border: 1px solid var(--ink); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18); }
+  .pal-panel[hidden] { display: none; }
+  .pal :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .pal-title { margin: 0 0 10px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .pal-title-2 { margin-top: 18px; }
+  .pal-title label { cursor: pointer; }
+  .pal-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .pal-sw { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 4px 8px 4px 4px; border: 1px solid var(--rule); background: transparent; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+  .pal-sw[aria-pressed='true'] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+  .pal-chip { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; font-family: var(--serif); font-size: 16px; }
+  .pal-roles { display: flex; flex-direction: column; gap: 8px; }
+  .pal-role { display: flex; align-items: center; gap: 10px; }
+  .pal-role input[type='color'] { flex: 0 0 44px; width: 44px; height: 44px; padding: 2px; border: 1px solid var(--rule); background: transparent; cursor: pointer; }
+  .pal-role-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .pal-role-main span { font-size: 12px; color: var(--muted); }
+  .pal-hex, .pal-code-row input { min-height: 44px; width: 100%; padding: 0 10px; border: 1px solid var(--rule); background: transparent; color: var(--ink); font: inherit; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; }
+  .pal-role-main .pal-hex { min-height: 38px; }
+  .pal-hex[aria-invalid='true'], .pal-code-row input[aria-invalid='true'] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+  .pal-auto { flex: 0 0 auto; min-height: 38px; padding: 0 10px; border: 1px solid var(--rule); background: transparent; color: var(--ink); font: inherit; font-size: 13px; cursor: pointer; align-self: flex-end; }
+  .pal-auto[hidden] { display: none; }
+  .pal-checks { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; color: var(--muted); }
+  .pal-checks li { display: flex; justify-content: space-between; gap: 8px; }
+  .pal-checks li[data-ok='false'] { color: var(--ink); font-weight: 700; }
+  .pal-code-row { display: flex; gap: 8px; }
+  .pal-code-row input { flex: 1; min-width: 0; width: auto; }
+  .pal-code-row button, .pal-actions button { min-height: 44px; border: 1px solid var(--ink); background: transparent; color: var(--ink); font: inherit; cursor: pointer; }
+  .pal-code-row button { flex: 0 0 auto; padding: 0 14px; }
+  .pal-hint { margin: 6px 0 0; font-size: 12px; color: var(--muted); }
+  .pal-hint[data-err='true'] { color: var(--ink); font-weight: 700; }
+  .pal-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+  .pal-actions button:last-child { grid-column: 1 / -1; }
+  .pal-actions button:hover, .pal-code-row button:hover, .pal-sw:hover, .pal-auto:hover { background: var(--alt); }
+  .pal-saved { display: flex; flex-direction: column; gap: 8px; }
+  .pal-saved-row { display: flex; gap: 8px; }
+  .pal-saved-row .pal-sw { flex: 1; }
+  .pal-del { flex: 0 0 44px; min-height: 44px; border: 1px solid var(--rule); background: transparent; color: var(--ink); font: inherit; font-size: 20px; line-height: 1; cursor: pointer; }
+  .pal-del:hover { background: var(--alt); border-color: var(--ink); }
+  @media print { .pal { display: none; } }
+</style>
+
+<script>
+  type Role = { id: string; label: string; auto: string | null };
+  type Preset = { id: string; name: string; c: (string | null)[] };
+  type Cur = { id: string | null; name: string; c: (string | null)[]; resolved: Record<string, string> };
+  type Api = {
+    roles: Role[];
+    presets: Preset[];
+    set: (s: { id: string } | { c: (string | null)[] } | null) => void;
+    setCode: (code: string) => boolean;
+    current: () => Cur;
+    checks: (c: (string | null)[]) => { label: string; ratio: number; min: number; ok: boolean }[];
+    toCode: (c: (string | null)[]) => string;
+    norm: (v: string) => string | null;
+    shareUrl: () => string;
+    resolve: (c: (string | null)[]) => Record<string, string>;
+    saved: {
+      list: () => { name: string; c: (string | null)[] }[];
+      add: (c: (string | null)[]) => unknown;
+      remove: (i: number) => unknown;
+    };
+  };
+  const api = (window as unknown as { paletteTool?: Api }).paletteTool;
+  const root = document.getElementById('pal');
+  if (api && root) {
+    root.hidden = false;
+    const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+    const toggle = $<HTMLButtonElement>('pal-toggle');
+    const panel = $('pal-panel');
+    const list = $('pal-list');
+    const rolesEl = $('pal-roles');
+    const checksEl = $('pal-checks');
+    const codeIn = $<HTMLInputElement>('pal-code');
+    const codeMsg = $('pal-code-msg');
+    const savedWrap = $('pal-saved-wrap');
+    const savedEl = $('pal-saved');
+    const defaultHint = 'Wklej HEX-y po spacji, np. #ffffff #141414 #b4410b. „-” = pole automatyczne.';
+    const same = (a: (string | null)[], b: (string | null)[]) => api.toCode(a) === api.toCode(b);
+
+    const chip = (c: (string | null)[]) => {
+      const v = api.resolve(c);
+      return `<span class="pal-chip" style="background:${v.bg};color:${v.ink};box-shadow:inset 0 -5px 0 ${v.accent},inset 0 0 0 1px color-mix(in srgb, ${v.ink} 30%, transparent)" aria-hidden="true">Aa</span>`;
+    };
+    const flash = (btn: HTMLButtonElement, text: string, ms = 1500) => {
+      const orig = btn.dataset.label || (btn.dataset.label = btn.textContent || '');
+      btn.textContent = text;
+      setTimeout(() => { btn.textContent = orig; }, ms);
+    };
+    const setMsg = (text: string, err = false) => { codeMsg.textContent = text; codeMsg.dataset.err = String(err); };
+
+    // gotowe palety
+    const presetBtns = api.presets.map((p) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'pal-sw';
+      b.innerHTML = `${chip(p.c)}<span>${p.name}</span>`;
+      b.addEventListener('click', () => { api.set({ id: p.id }); refresh(); });
+      list.appendChild(b);
+      return { b, p };
+    });
+
+    // wiersze ról (kolor + HEX + „auto”)
+    type Row = { role: Role; i: number; color: HTMLInputElement; hex: HTMLInputElement; auto: HTMLButtonElement };
+    const rows: Row[] = api.roles.map((role, i) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'pal-role';
+      const color = document.createElement('input');
+      color.type = 'color';
+      color.setAttribute('aria-label', `${role.label} — wybierak koloru`);
+      const main = document.createElement('label');
+      main.className = 'pal-role-main';
+      const name = document.createElement('span');
+      name.textContent = role.auto ? `${role.label} (puste = jak ${api.roles.find((r) => r.id === role.auto)?.label.toLowerCase()})` : role.label;
+      const hex = document.createElement('input');
+      hex.type = 'text';
+      hex.className = 'pal-hex';
+      hex.maxLength = 7;
+      hex.spellcheck = false;
+      hex.autocomplete = 'off';
+      hex.placeholder = role.auto ? 'auto' : '#rrggbb';
+      main.append(name, hex);
+      const auto = document.createElement('button');
+      auto.type = 'button';
+      auto.className = 'pal-auto';
+      auto.textContent = 'auto';
+      auto.setAttribute('aria-label', `${role.label}: przywróć automatyczny`);
+      wrap.append(color, main, ...(role.auto ? [auto] : []));
+      rolesEl.appendChild(wrap);
+      return { role, i, color, hex, auto };
+    });
+
+    const colorsNow = () => api.current().c.slice();
+    const commit = (c: (string | null)[]) => { api.set({ c }); refresh(); };
+    rows.forEach((r) => {
+      r.color.addEventListener('input', () => { const c = colorsNow(); c[r.i] = r.color.value; commit(c); });
+      r.hex.addEventListener('input', () => {
+        const v = r.hex.value.trim();
+        const c = colorsNow();
+        if (v === '' && r.role.auto) { r.hex.removeAttribute('aria-invalid'); c[r.i] = null; commit(c); return; }
+        const n = api.norm(v);
+        if (!n) { r.hex.setAttribute('aria-invalid', 'true'); return; }
+        r.hex.removeAttribute('aria-invalid');
+        c[r.i] = n;
+        commit(c);
+      });
+      r.hex.addEventListener('blur', () => { r.hex.removeAttribute('aria-invalid'); refresh(); });
+      r.auto.addEventListener('click', () => { const c = colorsNow(); c[r.i] = null; commit(c); });
+    });
+
+    // zapisane
+    function renderSaved(cur: Cur) {
+      const l = api!.saved.list();
+      savedWrap.hidden = l.length === 0;
+      savedEl.replaceChildren();
+      l.forEach((s, i) => {
+        const row = document.createElement('div');
+        row.className = 'pal-saved-row';
+        const pick = document.createElement('button');
+        pick.type = 'button';
+        pick.className = 'pal-sw';
+        pick.setAttribute('aria-pressed', String(!cur.id && same(cur.c, s.c)));
+        pick.innerHTML = `${chip(s.c)}<span>${s.name}</span>`;
+        pick.addEventListener('click', () => { api!.set({ c: s.c }); refresh(); });
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'pal-del';
+        del.textContent = '×';
+        del.setAttribute('aria-label', `Usuń paletę ${s.name}`);
+        del.addEventListener('click', () => { api!.saved.remove(i); refresh(); });
+        row.append(pick, del);
+        savedEl.appendChild(row);
+      });
+    }
+
+    function refresh() {
+      const cur = api!.current();
+      presetBtns.forEach(({ b, p }) => b.setAttribute('aria-pressed', String(cur.id === p.id)));
+      rows.forEach((r) => {
+        const raw = cur.c[r.i];
+        r.color.value = raw || cur.resolved[r.role.id];
+        if (document.activeElement !== r.hex) { r.hex.value = raw || ''; r.hex.removeAttribute('aria-invalid'); }
+        if (!r.role.auto) r.hex.value = document.activeElement === r.hex ? r.hex.value : (raw || '');
+        r.auto.hidden = !raw;
+      });
+      checksEl.replaceChildren(...api!.checks(cur.c).map((k) => {
+        const li = document.createElement('li');
+        li.dataset.ok = String(k.ok);
+        li.innerHTML = `<span>${k.label}</span><span>${k.ratio.toFixed(1).replace('.', ',')}:1 ${k.ok ? '✓' : '⚠ za niski'}</span>`;
+        return li;
+      }));
+      if (document.activeElement !== codeIn) { codeIn.value = api!.toCode(cur.c); codeIn.removeAttribute('aria-invalid'); }
+      renderSaved(cur);
+    }
+
+    // kod palety
+    function loadCode() {
+      if (api!.setCode(codeIn.value)) { codeIn.removeAttribute('aria-invalid'); setMsg('Wczytano paletę.'); refresh(); }
+      else { codeIn.setAttribute('aria-invalid', 'true'); setMsg('Nie rozpoznaję kodu. Potrzebne co najmniej tło i tekst w formacie #rrggbb.', true); }
+    }
+    $('pal-load').addEventListener('click', loadCode);
+    codeIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); loadCode(); } });
+    codeIn.addEventListener('input', () => { codeIn.removeAttribute('aria-invalid'); setMsg(defaultHint); });
+    codeIn.addEventListener('blur', () => { setMsg(defaultHint); refresh(); });
+
+    async function copyText(text: string, btn: HTMLButtonElement, prompt: string) {
+      try { await navigator.clipboard.writeText(text); flash(btn, 'Skopiowano'); }
+      catch { window.prompt(prompt, text); }
+    }
+    const copyCodeBtn = $<HTMLButtonElement>('pal-copy-code');
+    copyCodeBtn.addEventListener('click', () => copyText(api!.toCode(api!.current().c), copyCodeBtn, 'Skopiuj kod palety:'));
+    const copyBtn = $<HTMLButtonElement>('pal-copy');
+    copyBtn.addEventListener('click', () => copyText(api!.shareUrl(), copyBtn, 'Skopiuj link:'));
+    const saveBtn = $<HTMLButtonElement>('pal-save');
+    saveBtn.addEventListener('click', () => {
+      const cur = api!.current();
+      if (cur.id) { flash(saveBtn, 'Najpierw zmień kolory', 1800); return; } // gotowe palety są zawsze pod ręką
+      api!.saved.add(cur.c);
+      refresh();
+      flash(saveBtn, 'Zapisano', 1400);
+    });
+    $('pal-reset').addEventListener('click', () => { api!.set(null); refresh(); });
+
+    // otwieranie / zamykanie
+    function setOpen(open: boolean) {
+      panel.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+    }
+    toggle.addEventListener('click', () => setOpen(panel.hidden));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.hidden) { setOpen(false); toggle.focus(); }
+    });
+    document.addEventListener('click', (e) => {
+      if (!panel.hidden && !root.contains(e.target as Node)) setOpen(false);
+    });
+    setMsg(defaultHint);
+    refresh();
+  }
+</script>

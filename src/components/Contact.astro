@@ -23,7 +23,7 @@ const year = new Date().getFullYear();
 </section>
 
 <style>
-  .contact { background: var(--ink); color: var(--bg); padding-top: 96px; padding-bottom: 40px; }
+  .contact { background: var(--footer, var(--ink)); color: var(--bg); padding-top: 96px; padding-bottom: 40px; }
   .tel { display: inline-block; font-family: var(--serif); font-size: clamp(44px, 10vw, 180px); line-height: 0.95; letter-spacing: -0.03em; }
   .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px var(--gap); margin-top: 64px; border-top: 1px solid var(--inv-rule); padding-top: 16px; font-size: 16px; line-height: 1.6; }
   .grid span { color: var(--inv-muted); }
