@@ -28,6 +28,13 @@ const { current } = Astro.props;
 </header>
 
 <script>
+  // Pasek górny: cienka linia po przewinięciu strony.
+  const top = document.querySelector<HTMLElement>('.site-top');
+  if (top) {
+    const mark = () => top.toggleAttribute('data-stuck', window.scrollY > 4);
+    mark();
+    window.addEventListener('scroll', mark, { passive: true });
+  }
   // Menu mobilne: Esc i wybór pozycji zamykają je; po Esc fokus wraca na przycisk „Menu”.
   const menu = document.querySelector<HTMLDetailsElement>('.mob');
   if (menu) {
