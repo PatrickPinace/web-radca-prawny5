@@ -1,0 +1,33 @@
+---
+import { site } from '../data/site';
+interface Props { label?: string }
+const { label = 'Kontakt' } = Astro.props;
+const year = new Date().getFullYear();
+---
+<section id="kontakt" class="contact inv pad">
+  <div class="in">
+    <h2 class="label" style="color: var(--inv-muted); margin-bottom: 20px; font-weight: 400">{label}</h2>
+    <a class="tel u" href={`tel:${site.phoneHref}`}>{site.phone}</a>
+    <div class="grid">
+      <div><span>E-mail</span><br /><a class="u hit" href={`mailto:${site.email}`}>{site.email}</a></div>
+      <div><span>Adres</span><br />{site.street}<br />{site.postalCode} {site.city}</div>
+      <div><span>Godziny</span><br />{site.hours}</div>
+      <div><span>Języki</span><br />{site.languages.map((l) => l.name).join(', ')}</div>
+    </div>
+    <div class="foot">
+      <span>© {year} {site.firm} · NIP {site.nip}</span>
+      <a class="u hit" href="/polityka-prywatnosci/">Polityka prywatności</a>
+    </div>
+    {site.demo && <p class="demo">Wersja demonstracyjna — dane kontaktowe i teksty są przykładowe.</p>}
+  </div>
+</section>
+
+<style>
+  .contact { background: var(--ink); color: var(--bg); padding-top: 96px; padding-bottom: 40px; }
+  .tel { display: inline-block; font-family: var(--serif); font-size: clamp(44px, 10vw, 180px); line-height: 0.95; letter-spacing: -0.03em; }
+  .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px var(--gap); margin-top: 64px; border-top: 1px solid var(--inv-rule); padding-top: 16px; font-size: 16px; line-height: 1.6; }
+  .grid span { color: var(--inv-muted); }
+  .foot { margin-top: 96px; display: flex; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; font-size: 14px; color: var(--inv-muted); }
+  .demo { margin: 16px 0 0; font-size: 14px; color: var(--inv-muted); }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+</style>

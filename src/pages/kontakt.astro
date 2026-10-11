@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../data/site';
+---
+<Base title={`Kontakt | ${site.person} — ${site.role}, ${site.city}`} description={`Kontakt z kancelarią w ${site.city === 'Mielec' ? 'Mielcu' : site.city}: telefon, e-mail, adres i godziny pracy.`} current="/kontakt/" contactLabel="Zadzwoń">
+  <section class="pad" style="padding-bottom: 96px">
+    <div class="in">
+      <h1 class="title">Kontakt</h1>
+      <div class="g intro">
+        <p class="side label" style="padding-top: 6px">Dojazd</p>
+        <div class="main prose">
+          <p>{site.street}, {site.postalCode} {site.city}.</p>
+          <p>Kancelaria jest w centrum, kilka minut spacerem od rynku. Parking jest w podwórku, wejście od ulicy, drugie piętro. Najlepiej umów się wcześniej telefonicznie albo mailem.</p>
+          <p><a class="link hit" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${site.street} ${site.postalCode} ${site.city}`)}`} rel="noopener">Otwórz w Mapach Google</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+<style>
+  .title { margin: clamp(40px, 6vw, 96px) 0 0 -0.04em; font-family: var(--serif); font-weight: 500; font-size: clamp(64px, 13vw, 240px); line-height: 0.9; letter-spacing: -0.04em; }
+  .intro { margin-top: 32px; border-top: 1px solid var(--ink); padding-top: 24px; }
+</style>

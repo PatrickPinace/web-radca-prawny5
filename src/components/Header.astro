@@ -1,0 +1,66 @@
+---
+import { site, nav } from '../data/site';
+import { showLanguageSwitcher } from '../data/env';
+interface Props { current?: string }
+const { current } = Astro.props;
+---
+<header class="hdr">
+  <a href="/" class="brand">{site.person} — {site.role}</a>
+
+  <nav class="desk" aria-label="Główna">
+    {nav.map((n) => (
+      <a href={n.href} class="u" aria-current={current === n.href ? 'page' : undefined}>{n.label}</a>
+    ))}
+    {showLanguageSwitcher && (
+      <span class="lang" role="group" aria-label="Język strony"><span aria-current="true">PL</span><span title="Wersja angielska — w przygotowaniu">EN<span class="sr-only"> (w przygotowaniu)</span></span><span title="Wersja słowacka — w przygotowaniu">SK<span class="sr-only"> (w przygotowaniu)</span></span></span>
+    )}
+  </nav>
+
+  <details class="mob">
+    <summary><span class="open-l">Menu</span><span class="close-l">Zamknij</span></summary>
+    <nav aria-label="Menu" class="mob-nav">
+      {nav.map((n) => <a href={n.href}>{n.label}</a>)}
+      {showLanguageSwitcher && (
+        <span class="lang" role="group" aria-label="Język strony"><span aria-current="true">PL</span><span>EN<span class="sr-only"> (w przygotowaniu)</span></span><span>SK<span class="sr-only"> (w przygotowaniu)</span></span></span>
+      )}
+    </nav>
+  </details>
+</header>
+
+<script>
+  // Menu mobilne: Esc i wybór pozycji zamykają je; po Esc fokus wraca na przycisk „Menu”.
+  const menu = document.querySelector<HTMLDetailsElement>('.mob');
+  if (menu) {
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menu.open) {
+        menu.open = false;
+        menu.querySelector('summary')?.focus();
+      }
+    });
+    menu.querySelectorAll('.mob-nav a').forEach((a) => a.addEventListener('click', () => { menu.open = false; }));
+  }
+</script>
+
+<style>
+  .hdr { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 20px; font-size: 15px; position: relative; }
+  .brand, .desk a, summary { display: inline-flex; align-items: center; min-height: 44px; }
+  .desk { display: flex; gap: 32px; flex-wrap: wrap; }
+  .desk a[aria-current='page'] { text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 1px; }
+  .lang { display: inline-flex; gap: 12px; color: var(--muted); }
+  .lang > span { display: inline-flex; align-items: center; min-height: 44px; }
+  .lang [aria-current] { color: var(--ink); }
+  .mob { display: none; }
+  summary { list-style: none; cursor: pointer; font-size: 16px; text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 1px; }
+  summary::-webkit-details-marker { display: none; }
+  .close-l { display: none; }
+  .mob[open] .open-l { display: none; }
+  .mob[open] .close-l { display: inline; }
+  .mob-nav { display: flex; flex-direction: column; padding: 8px 0 24px; border-bottom: 1px solid var(--ink); font-family: var(--serif); font-size: 32px; line-height: 1.2; }
+  .mob-nav > a { padding: 8px 0; }
+  .mob-nav .lang { margin-top: 12px; gap: 20px; font-family: var(--sans); font-size: 16px; }
+  .mob-nav { position: absolute; left: 0; right: 0; top: 100%; z-index: 5; background: var(--bg); }
+  @media (max-width: 760px) {
+    .desk { display: none; }
+    .mob { display: block; }
+  }
+</style>

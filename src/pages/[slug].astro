@@ -1,0 +1,147 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+
+export async function getStaticPaths() {
+  const specs = (await getCollection('specjalizacje')).sort((a, b) => a.data.order - b.data.order);
+  return specs.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry, others: specs.filter((s) => s.id !== entry.id) },
+  }));
+}
+
+const { entry, others } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
+// Pytania z placeholderem "[…]" nie trafiają do danych strukturalnych.
+const realFaq = d.faq.filter((f) => !f.a.trim().startsWith('['));
+const jsonLd: Record<string, unknown>[] = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Gacoń', item: new URL('/', Astro.site).toString() },
+      // Pośredni człon „Zakres spraw” to kotwica (/#zakres), a nie osobna strona — nie trafia do danych strukturalnych.
+      { '@type': 'ListItem', position: 2, name: d.title, item: new URL(`/${entry.id}/`, Astro.site).toString() },
+    ],
+  },
+];
+if (realFaq.length && !d.draft) {
+  jsonLd.push({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: realFaq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  });
+}
+
+const toc = [
+  { id: 'opis', label: 'Opis' },
+  ...(d.services.length ? [{ id: 'zakres-uslug', label: 'W czym pomagamy' }] : []),
+  ...(d.faq.length ? [{ id: 'pytania', label: 'Częste pytania' }] : []),
+  { id: 'kontakt', label: 'Kontakt' },
+];
+---
+<Base title={d.seoTitle} description={d.seoDescription} current="/#zakres" contactLabel={`${d.title}? Zadzwoń`} jsonLd={jsonLd} noindex={d.draft}>
+  <section class="pad">
+    <div class="in">
+      <nav aria-label="Ścieżka" class="crumbs">
+        <ol>
+          <li><a href="/" class="u hit">Gacoń</a></li>
+          <li><a href="/#zakres" class="u hit">Zakres spraw</a></li>
+          <li><span aria-current="page">{d.title}</span></li>
+        </ol>
+      </nav>
+      <h1 class="title">{d.title}</h1>
+      <div class="g intro">
+        <p class="side label" style="padding-top: 6px">{pad2(d.order)} / Zakres spraw</p>
+        <p class="main lead serif">{d.lead}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pad" style="padding-bottom: 120px">
+    <div class="in g">
+      <aside class="side">
+        <p class="label" style="margin-bottom: 12px">Na tej stronie</p>
+        <nav class="toc" aria-label="Spis treści">
+          {toc.map((t, i) => <a href={`#${t.id}`}><span>{pad2(i + 1)}</span>{t.label}</a>)}
+        </nav>
+      </aside>
+
+      <div class="main">
+        <div id="opis" class="prose"><Content /></div>
+
+        {d.services.length > 0 && (
+          <>
+            <h2 id="zakres-uslug" class="h2" style="margin-top: 88px">W czym pomagamy</h2>
+            <dl class="svc">
+              {d.services.map((s) => (
+                <div><dt>{s.name}</dt><dd>{s.text}</dd></div>
+              ))}
+            </dl>
+          </>
+        )}
+
+        {d.faq.length > 0 && (
+          <>
+            <h2 id="pytania" class="h2" style="margin-top: 96px">Częste pytania</h2>
+            <div class="faq">
+              {d.faq.map((f, i) => (
+                <details open={i === 0}>
+                  <summary>{f.q}<span class="pm" aria-hidden="true">+</span></summary>
+                  <p class="ans">{f.a}</p>
+                </details>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <section class="pad others">
+    <div class="in g">
+      <h2 class="side label" style="padding-top: 12px">Inne sprawy</h2>
+      <ul class="main rel">
+        {others.map((o) => <li><a href={`/${o.id}/`}>{o.data.title}</a></li>)}
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .crumbs { margin-top: clamp(40px, 6vw, 96px); font-size: 14px; color: var(--muted); }
+  .crumbs ol { margin: 0; padding: 0; list-style: none; }
+  .crumbs li { display: inline; }
+  .crumbs li + li::before { content: '/'; content: '/' / ''; margin: 0 0.3em; }
+  .crumbs [aria-current] { color: var(--ink); }
+  .title { margin: 16px 0 0 -0.04em; font-family: var(--serif); font-weight: 500; font-size: clamp(64px, 15vw, 280px); line-height: 0.9; letter-spacing: -0.04em; overflow-wrap: anywhere; }
+  .intro { margin-top: 32px; border-top: 1px solid var(--ink); padding: 24px 0 96px; }
+  .lead { margin: 0; max-width: 36ch; font-size: clamp(24px, 2.2vw, 34px); line-height: 1.32; }
+  .toc a { display: flex; gap: 14px; min-height: 40px; align-items: center; font-size: 15px; }
+  .toc a span { color: var(--muted); }
+  .toc a:hover { text-decoration: underline; text-underline-offset: 5px; }
+  .svc { margin: 0; border-bottom: 1px solid var(--rule); }
+  .svc > div { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 52ch); column-gap: 32px; padding: 20px 0; border-top: 1px solid var(--rule); align-items: baseline; }
+  .svc dt { font-size: 17px; font-weight: 700; }
+  .svc dd { margin: 0; font-size: 16px; line-height: 1.6; color: var(--soft); }
+  .faq { border-bottom: 1px solid var(--rule); }
+  .faq details { border-top: 1px solid var(--rule); }
+  .faq summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; gap: 24px; align-items: baseline; padding: 22px 0; font-family: var(--serif); font-size: clamp(21px, 1.7vw, 26px); line-height: 1.3; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary:hover { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 1px; }
+  .pm { font-family: var(--sans); font-size: 22px; flex: 0 0 auto; }
+  .faq details[open] .pm { transform: rotate(45deg); }
+  .ans { margin: 0; max-width: 64ch; padding: 0 0 26px; font-size: 17px; line-height: 1.65; color: #2b2b29; }
+  .others { padding-top: 72px; padding-bottom: 96px; background: var(--alt); }
+  .rel { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 4px 32px; font-family: var(--serif); font-size: clamp(22px, 2vw, 30px); }
+  .rel a { display: inline-flex; align-items: center; min-height: 48px; }
+  .rel a:hover { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 1px; }
+  @media (max-width: 760px) {
+    .toc { display: flex; flex-wrap: wrap; gap: 0 20px; }
+    .toc a span { display: none; }
+    .svc > div { grid-template-columns: 1fr; row-gap: 6px; }
+  }
+</style>

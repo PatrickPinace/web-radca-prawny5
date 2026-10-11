@@ -1,0 +1,26 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../data/site';
+---
+<Base title={`Polityka prywatności | ${site.person} — ${site.role}`} description="Informacje o przetwarzaniu danych osobowych.">
+  <section class="pad" style="padding-bottom: 120px">
+    <div class="in g">
+      <h1 class="main title">Polityka prywatności</h1>
+      <div class="side"></div>
+      <div class="main prose">
+        {site.demo && <p><strong>Wersja demonstracyjna.</strong> Poniższy tekst jest przykładowy i wymaga przygotowania przez kancelarię.</p>}
+        <h2>Kto jest administratorem danych</h2>
+        <p>Administratorem jest {site.firm}, {site.street}, {site.postalCode} {site.city}. Kontakt w sprawach danych: <a href={`mailto:${site.email}`}>{site.email}</a>.</p>
+        <h2>Jakie dane i po co</h2>
+        <p>Jeśli napiszesz lub zadzwonisz, używamy Twoich danych (imię, kontakt, opis sprawy), żeby odpowiedzieć i ocenić, czy możemy pomóc. Nie wysyłamy niczego, o co nie prosiłeś.</p>
+        <h2>Twoje prawa</h2>
+        <p>Możesz poprosić o dostęp do danych, ich sprostowanie lub usunięcie. Napisz na adres powyżej.</p>
+        <h2>Pliki cookie</h2>
+        <p>Strona nie używa plików cookie śledzących ani zewnętrznych narzędzi analitycznych. Czcionki są serwowane z&nbsp;tego samego serwera co strona.</p>
+      </div>
+    </div>
+  </section>
+</Base>
+<style>
+  .title { margin: clamp(40px, 6vw, 96px) 0 48px; font-family: var(--serif); font-weight: 400; font-size: clamp(44px, 6vw, 96px); line-height: 1; letter-spacing: -0.03em; }
+</style>

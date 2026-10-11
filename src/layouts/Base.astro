@@ -1,0 +1,69 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Contact from '../components/Contact.astro';
+import { site } from '../data/site';
+import { isProduction, isPlaceholder, noindexPaths } from '../data/env';
+
+interface Props {
+  title: string;
+  description: string;
+  current?: string;
+  contactLabel?: string;
+  jsonLd?: Record<string, unknown>[];
+  noindex?: boolean;
+}
+const { title, description, current, contactLabel, jsonLd = [], noindex = false } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+// Podgląd (domyślny build) jest zawsze noindex; na produkcji decyduje strona albo lista w env.ts.
+const robotsNoindex = !isProduction || noindex || noindexPaths.has(Astro.url.pathname);
+// Niepotwierdzone dane (placeholdery) nie trafiają do danych strukturalnych.
+const real = (v: string) => (isPlaceholder(v) ? undefined : v);
+
+const org = {
+  '@context': 'https://schema.org',
+  '@type': 'LegalService',
+  name: site.firm,
+  url: Astro.site?.toString(),
+  telephone: real(site.phoneHref),
+  email: real(site.email),
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: real(site.street),
+    postalCode: real(site.postalCode),
+    addressLocality: site.city,
+    addressCountry: 'PL',
+  },
+  availableLanguage: site.languages.map((l) => l.code),
+};
+---
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {robotsNoindex && <meta name="robots" content="noindex" />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pl_PL" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="theme-color" content="#ffffff" />
+    <script type="application/ld+json" set:html={JSON.stringify(org)} />
+    {jsonLd.map((d) => <script type="application/ld+json" set:html={JSON.stringify(d)} />)}
+  </head>
+  <body>
+    <a class="skip" href="#tresc">Przejdź do treści</a>
+    <div class="pad" style="padding-top: 16px">
+      <div class="in"><Header current={current} /></div>
+    </div>
+    <main id="tresc">
+      <slot />
+    </main>
+    <Contact label={contactLabel} />
+  </body>
+</html>

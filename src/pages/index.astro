@@ -1,0 +1,113 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { Image } from 'astro:assets';
+import { site } from '../data/site';
+import portrait from '../assets/portret-demo.jpg';
+
+const specs = (await getCollection('specjalizacje')).sort((a, b) => a.data.order - b.data.order);
+const pad2 = (n: number) => String(n).padStart(2, '0');
+---
+<Base
+  title={`Radca prawny ${site.city === 'Mielec' ? 'Mielec' : site.city} | Kancelaria Piotra Gaconia`}
+  description={`Radca prawny w ${site.city === 'Mielec' ? 'Mielcu' : site.city}. Sprawy cywilne, rodzinne, spadkowe i gospodarcze — porady, umowy i reprezentacja przed sądem. Obsługa po polsku, angielsku i słowacku.`}
+  current="/"
+>
+  <section class="pad hero">
+    <div class="in">
+      <h1 class="name">Gacoń<span class="sr-only"> — {site.firm}, {site.city}</span></h1>
+      <div class="meta">
+        <div>Kancelaria Radców Prawnych</div>
+        <div>{site.city}, {site.street}</div>
+        <div>{site.languages.map((l) => l.native).join(' · ')}</div>
+        <div><a class="u hit" href={`tel:${site.phoneHref}`} style="font-weight: 700">{site.phone}</a></div>
+      </div>
+      <p class="lead serif">Sprawy cywilne, rodzinne, spadkowe i&nbsp;gospodarcze. Porady, umowy i&nbsp;reprezentacja przed sądem.</p>
+    </div>
+  </section>
+
+  <section id="kancelaria" class="pad block" style="border-top: 1px solid var(--rule)">
+    <div class="in g">
+      <h2 class="label side" style="padding-top: 12px">Kancelaria</h2>
+      <p class="main about serif">Jesteśmy kancelarią radców prawnych z&nbsp;Mielca. Prowadzimy sprawy osób prywatnych i&nbsp;firm — od pierwszej porady, przez umowę, po proces.</p>
+    </div>
+  </section>
+
+  <section class="pad" style="padding-bottom: 120px">
+    <figure class="in portrait">
+      <!-- DEMO: zdjęcie poglądowe (sylwetka). Podmień src/assets/portret-demo.jpg na prawdziwe po sesji. -->
+      <div class="ph"><Image src={portrait} alt="Piotr Gacoń, radca prawny (zdjęcie poglądowe)" widths={[400, 620, 900]} sizes="(max-width: 760px) 100vw, 620px" /></div>
+      <figcaption>
+        <p class="serif cap-name">{site.person}</p>
+        <p class="cap-text">Radca prawny. Wpisany na listę Okręgowej Izby Radców Prawnych w&nbsp;{site.chamber} pod numerem {site.registryNo}. Prowadzi sprawy po polsku, angielsku i&nbsp;słowacku.</p>
+        <a class="link hit" href="/kancelaria/">O kancelarii</a>
+      </figcaption>
+    </figure>
+  </section>
+
+  <section id="zakres" class="pad block" style="border-top: 1px solid var(--ink)">
+    <div class="in">
+      <h2 class="label" style="margin-bottom: 40px">Zakres spraw</h2>
+      <ul class="rows">
+        {specs.map((s) => (
+          <li>
+            <a class="row" href={`/${s.id}/`}>
+              <span class="tnum" style="font-size: 14px; color: var(--muted)">{pad2(s.data.order)}</span>
+              <span class="rn">{s.data.title}</span>
+              <span class="rd">{s.data.short}</span>
+              <span class="arr" aria-hidden="true">→</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="pad block" style="background: var(--alt)">
+    <div class="in">
+      <h2 class="h2" style="margin-bottom: 40px">Jak pracujemy</h2>
+      <ol class="toc">
+        <li><span class="n">01</span><span class="t">Rozmowa</span><span class="d">Opisujesz sprawę przez telefon, mailowo albo na spotkaniu w&nbsp;kancelarii.</span></li>
+        <li><span class="n">02</span><span class="t">Plan i koszt</span><span class="d">Zanim zaczniemy, wiesz, co zrobimy, w&nbsp;jakim czasie i&nbsp;za ile.</span></li>
+        <li><span class="n">03</span><span class="t">Prowadzenie sprawy</span><span class="d">Informujemy o&nbsp;każdym piśmie i&nbsp;terminie. Dokumenty możesz przesłać elektronicznie.</span></li>
+      </ol>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero { padding-bottom: 96px; }
+  .name { margin: clamp(48px, 9vw, 160px) 0 0 -0.05em; font-family: var(--serif); font-weight: 500; font-size: clamp(120px, 28vw, 560px); line-height: 0.78; letter-spacing: -0.045em; }
+  .meta { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px var(--gap); margin-top: 32px; border-top: 1px solid var(--ink); padding-top: 14px; font-size: 15px; }
+  .lead { margin: 48px 0 0 50%; max-width: 36ch; font-size: clamp(20px, 1.8vw, 28px); line-height: 1.42; }
+  .block { padding-top: 96px; padding-bottom: 120px; }
+  .about { margin: 0; max-width: 32ch; font-size: clamp(28px, 3.1vw, 50px); line-height: 1.22; letter-spacing: -0.01em; }
+  .portrait { margin: 0 auto; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--gap); align-items: end; }
+  .ph { grid-column: 1 / span 5; max-width: 620px; aspect-ratio: 4 / 5; background: var(--alt); overflow: hidden; }
+  .ph :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  figcaption { grid-column: 7 / span 5; max-width: 40ch; }
+  .cap-name { margin: 0 0 12px; font-size: clamp(28px, 2.4vw, 40px); line-height: 1.1; }
+  .cap-text { margin: 0 0 16px; font-size: 16px; line-height: 1.6; color: var(--soft); }
+  .rows { list-style: none; margin: 0; padding: 0; max-width: 1240px; border-bottom: 1px solid var(--rule); }
+  .row { display: grid; grid-template-columns: 64px minmax(0, 1fr) minmax(0, 40ch) 40px; column-gap: var(--gap); align-items: baseline; padding: 20px 0; border-top: 1px solid var(--rule); }
+  .row:hover { background: rgba(128, 128, 128, 0.09); }
+  .row:hover .rn { text-decoration: underline; text-underline-offset: 8px; text-decoration-thickness: 1px; }
+  .rn { font-family: var(--serif); font-size: clamp(32px, 4.1vw, 62px); line-height: 1.05; letter-spacing: -0.015em; }
+  .rd { font-size: 16px; line-height: 1.55; color: var(--soft); }
+  .arr { justify-self: end; font-size: 22px; }
+  .toc { list-style: none; margin: 0; padding: 0; max-width: 1240px; border-bottom: 1px solid var(--rule); }
+  .toc li { display: grid; grid-template-columns: 64px minmax(0, 320px) minmax(0, 48ch); column-gap: var(--gap); padding: 18px 0; align-items: baseline; border-top: 1px solid var(--rule); }
+  .toc .n { font-size: 14px; color: var(--muted); }
+  .toc .t { font-size: 17px; font-weight: 700; }
+  .toc .d { font-size: 16px; line-height: 1.55; color: var(--soft); }
+  @media (max-width: 760px) {
+    .name { font-size: 33vw; }
+    .meta { grid-template-columns: 1fr; }
+    .lead { margin-left: 0; }
+    .ph, figcaption { grid-column: 1 / -1; max-width: none; }
+    .row { grid-template-columns: 40px minmax(0, 1fr) 32px; row-gap: 6px; }
+    .rd { grid-column: 2 / span 2; grid-row: 2; }
+    .toc li { grid-template-columns: 40px minmax(0, 1fr); row-gap: 6px; }
+    .toc .d { grid-column: 2; }
+  }
+</style>

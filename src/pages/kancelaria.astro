@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../data/site';
+---
+<Base title={`O kancelarii | ${site.person} — ${site.role} ${site.city}`} description={`O kancelarii: ${site.person}, ${site.role}, ${site.city}. Zasady współpracy, języki obsługi, dane zawodowe.`} current="/kancelaria/">
+  <section class="pad">
+    <div class="in">
+      <h1 class="title">Kancelaria</h1>
+      <div class="g intro">
+        <p class="side label" style="padding-top: 6px">O nas</p>
+        <p class="main lead serif">Jesteśmy kancelarią radców prawnych z&nbsp;Mielca. Prowadzimy sprawy osób prywatnych i&nbsp;firm — od pierwszej porady, przez umowę, po proces.</p>
+      </div>
+    </div>
+  </section>
+  <section class="pad" style="padding-bottom: 120px">
+    <div class="in g">
+      <div class="side"></div>
+      <div class="main prose">
+        <p>Pracujemy w Mielcu i okolicy, głównie z osobami prywatnymi i małymi firmami. Staramy się tłumaczyć prawo prostym językiem — bez „w związku z powyższym” tam, gdzie wystarczy „dlatego”.</p>
+        <p>Zanim zaczniemy działać, mówimy, co jest do zrobienia, ile to potrwa i ile kosztuje. Jeśli sprawa nie ma sensu, też to powiemy.</p>
+        <h2>{site.person}</h2>
+        <p>Radca prawny, wpisany na listę Okręgowej Izby Radców Prawnych w&nbsp;{site.chamber} pod numerem {site.registryNo}. Prowadzi sprawy w&nbsp;językach: {site.languages.map((l) => l.name).join(', ')}.</p>
+        <p>Na co dzień zajmuje się sprawami cywilnymi, rodzinnymi i spadkowymi, a także obsługą firm. Lubi, gdy klient rozumie, co się dzieje w jego sprawie, więc chętnie tłumaczy na prostych przykładach.</p>
+        <h2>Informacje wymagane prawem</h2>
+        <p>{site.firm}, {site.street}, {site.postalCode} {site.city}. NIP {site.nip}. Radca prawny podlega Okręgowej Izbie Radców Prawnych w&nbsp;{site.chamber}; zasady wykonywania zawodu określa ustawa o&nbsp;radcach prawnych oraz Kodeks Etyki Radcy Prawnego.</p>
+      </div>
+    </div>
+  </section>
+</Base>
+<style>
+  .title { margin: clamp(40px, 6vw, 96px) 0 0 -0.04em; font-family: var(--serif); font-weight: 500; font-size: clamp(64px, 13vw, 240px); line-height: 0.9; letter-spacing: -0.04em; }
+  .intro { margin-top: 32px; border-top: 1px solid var(--ink); padding: 24px 0 96px; }
+  .lead { margin: 0; max-width: 36ch; font-size: clamp(24px, 2.2vw, 34px); line-height: 1.32; }
+</style>
