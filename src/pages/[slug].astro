@@ -63,8 +63,8 @@ const toc = [
 
   <section class="pad" style="padding-bottom: 120px">
     <div class="in g">
-      <aside class="side">
-        <p class="label" style="margin-bottom: 12px">Na tej stronie</p>
+      <aside class="side side-toc">
+        <p class="label toc-label" style="margin-bottom: 12px">Na tej stronie</p>
         <nav class="toc" aria-label="Spis treści">
           {toc.map((t, i) => <a href={`#${t.id}`}><span>{pad2(i + 1)}</span>{t.label}</a>)}
         </nav>
@@ -122,7 +122,10 @@ const toc = [
   .lead { margin: 0; max-width: 36ch; font-size: clamp(24px, 2.2vw, 34px); line-height: 1.32; }
   .toc a { display: flex; gap: 14px; min-height: 40px; align-items: center; font-size: 15px; }
   .toc a span { color: var(--accent, var(--muted)); }
-  .toc a:hover { text-decoration: underline; text-underline-offset: 5px; text-decoration-color: var(--accent, currentColor); }
+  .toc a:hover, .toc a[aria-current='location'] { text-decoration: underline; text-underline-offset: 5px; text-decoration-color: var(--accent, currentColor); }
+  .toc a[aria-current='location'] span { color: var(--accent, var(--ink)); }
+  /* Spis treści zostaje na ekranie pod paskiem górnym (60 px); aktywną sekcję zaznacza skrypt poniżej. */
+  .side-toc { align-self: start; position: sticky; top: 92px; }
   .svc { margin: 0; border-bottom: 1px solid var(--rule); }
   .svc > div { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 52ch); column-gap: 32px; padding: 20px 0; border-top: 1px solid var(--rule); align-items: baseline; }
   .svc dt { font-size: 17px; font-weight: 700; }
@@ -140,8 +143,45 @@ const toc = [
   .rel a { display: inline-flex; align-items: center; min-height: 48px; }
   .rel a:hover { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 1px; text-decoration-color: var(--accent, currentColor); }
   @media (max-width: 760px) {
-    .toc { display: flex; flex-wrap: wrap; gap: 0 20px; }
+    /* Telefon: spis jako jednoliniowy pasek przyklejony pod topbarem. */
+    .side-toc { top: 60px; z-index: 9; background: var(--bg); border-bottom: 1px solid var(--rule); }
+    .toc-label { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .toc { display: flex; flex-wrap: nowrap; gap: 0 20px; overflow-x: auto; scrollbar-width: none; }
+    .toc::-webkit-scrollbar { display: none; }
+    .toc a { flex: 0 0 auto; white-space: nowrap; }
     .toc a span { display: none; }
     .svc > div { grid-template-columns: 1fr; row-gap: 6px; }
   }
 </style>
+
+<script>
+  // Scroll-spy: podkreśla w spisie treści sekcję, w której aktualnie jesteśmy.
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('nav.toc a'));
+  const targets = links.map((a) => document.getElementById(a.hash.slice(1)));
+  if (links.length) {
+    let ticking = false;
+    let last = -1;
+    const update = () => {
+      ticking = false;
+      // linia „czytania”: odstęp, na jaki lądują kotwice (scroll-padding), plus zapas
+      const line = (parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 80) + 24;
+      const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+      let active = 0;
+      targets.forEach((t, i) => { if (t && t.getBoundingClientRect().top <= line) active = i; });
+      if (atBottom) active = links.length - 1;
+      if (active === last) return;
+      last = active;
+      links.forEach((a, i) => {
+        if (i === active) a.setAttribute('aria-current', 'location');
+        else a.removeAttribute('aria-current');
+      });
+      // pasek na telefonie: aktywny link zawsze widoczny
+      const nav = links[0].parentElement as HTMLElement;
+      if (nav.scrollWidth > nav.clientWidth) nav.scrollTo({ left: links[active].offsetLeft - (nav.clientWidth - links[active].offsetWidth) / 2, behavior: 'smooth' });
+    };
+    const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    update();
+  }
+</script>

@@ -37,6 +37,9 @@ a { color: inherit; text-decoration: none; }
 .site-top { position: sticky; top: 0; z-index: 10; background: var(--bg); }
 .site-top[data-stuck] { box-shadow: 0 1px 0 var(--rule); }
 
+/* Na telefonie spis treści podstrony jest przyklejony pod topbarem (60 px) — kotwice potrzebują większego odstępu. */
+@media (max-width: 760px) { html:has(nav.toc) { scroll-padding-top: 124px; } }
+
 /* Akcent: zmienna --accent jest opcjonalna (ustawia ją tylko panel palet). Bez niej wszystko ma dotychczasowy kolor. */
 
 /* Układ */
